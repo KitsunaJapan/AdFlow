@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AdFlow — ログイン</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;
+  --border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.14);
+  --text:#f0f0f5;--text2:#8888a0;--text3:#4a4a60;
+  --accent:#6c6cff;--accent-d:rgba(108,108,255,0.12);
+  --success:#3ecf8e;--err:#ff5555;
+  --r:10px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.wrap{width:100%;max-width:380px}
+.logo{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:600;
+  letter-spacing:-.5px;margin-bottom:3rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 12px var(--accent)}
+h1{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:6px}
+.sub{font-size:13px;color:var(--text2);margin-bottom:2rem}
+.attempts{display:flex;gap:5px;margin-bottom:1.25rem}
+.dot2{width:8px;height:8px;border-radius:50%;background:var(--border-h);transition:.2s}
+.dot2.used{background:var(--err)}
+.field{margin-bottom:1rem;position:relative}
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500}
+input[type=password],input[type=text]{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 40px 10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;
+  color:var(--text);outline:none;transition:.18s}
+input:focus{border-color:rgba(108,108,255,.5)}
+input.err{border-color:rgba(255,85,85,.5)}
+.eye{position:absolute;right:10px;top:32px;background:none;border:none;
+  color:var(--text3);cursor:pointer;font-size:14px;transition:.15s}
+.eye:hover{color:var(--text2)}
+.error-msg{font-size:12px;color:var(--err);min-height:18px;margin-bottom:.75rem;
+  display:flex;align-items:center;gap:4px}
+.btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);
+  padding:11px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:.18s;margin-bottom:1rem}
+.btn:hover{background:#5555ee}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:11px;color:var(--text3);text-align:center;font-family:'DM Mono',monospace}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.shake{animation:shake .35s ease}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><div class="dot"></div>AdFlow</div>
+  <h1>ログイン</h1>
+  <p class="sub">このシステムにアクセスするにはパスワードが必要です</p>
+  <div class="attempts" id="attempts">
+    <div class="dot2" id="d0"></div><div class="dot2" id="d1"></div>
+    <div class="dot2" id="d2"></div><div class="dot2" id="d3"></div>
+    <div class="dot2" id="d4"></div>
+  </div>
+  <div class="field">
+    <label>パスワード</label>
+    <input type="password" id="pw" placeholder="パスワードを入力"
+      onkeydown="if(event.key==='Enter')login()" autocomplete="current-password" />
+    <button class="eye" onclick="toggleEye()" type="button">👁</button>
+  </div>
+  <div class="error-msg" id="errmsg"></div>
+  <button class="btn" id="btn" onclick="login()">ログイン</button>
+  <div class="hint">管理者からパスワードを取得してください</div>
+</div>
+<script>
+let attempts = 0;
+const MAX = 5;
+
+async function login() {
+  const pw = document.getElementById('pw').value;
+  if (!pw) return;
+  document.getElementById('btn').disabled = true;
+  try {
+    const res = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      window.location.href = '/dashboard.html';
+      return;
+    }
+    // 失敗
+    document.getElementById('pw').value = '';
+    document.getElementById('pw').classList.add('err');
+    if (attempts < MAX) {
+      document.getElementById('d' + attempts).classList.add('used');
+      attempts++;
+    }
+    document.querySelector('.wrap').classList.remove('shake');
+    void document.querySelector('.wrap').offsetWidth;
+    document.querySelector('.wrap').classList.add('shake');
+    document.getElementById('errmsg').textContent = '⚠ ' + (data.error || 'エラーが発生しました');
+    if (!data.locked) document.getElementById('btn').disabled = false;
+  } catch(e) {
+    document.getElementById('errmsg').textContent = '⚠ 接続エラーが発生しました';
+    document.getElementById('btn').disabled = false;
+  }
+}
+
+function toggleEye() {
+  const inp = document.getElementById('pw');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+document.getElementById('pw').focus();
+</script>
+</body>
+</html>

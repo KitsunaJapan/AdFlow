@@ -1,0 +1,19 @@
+# 依存パッケージ（npm install で再生成されるので不要）
+node_modules/
+
+# 環境変数（パスワード・APIキーが含まれるため絶対にコミットしない）
+.env
+
+# OS・エディタ生成ファイル
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ログ
+*.log
+npm-debug.log*
+
+# その他
+dist/
+.cache/

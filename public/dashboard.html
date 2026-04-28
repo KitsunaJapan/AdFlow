@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AdFlow — ダッシュボード</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;
+  --border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.14);
+  --text:#f0f0f5;--text2:#8888a0;--text3:#4a4a60;
+  --accent:#6c6cff;--accent-d:rgba(108,108,255,0.12);
+  --success:#3ecf8e;--success-d:rgba(62,207,142,0.1);
+  --warn:#f5a623;--warn-d:rgba(245,166,35,0.1);
+  --err:#ff5555;--err-d:rgba(255,85,85,0.1);
+  --google:#4285f4;--google-d:rgba(66,133,244,0.12);
+  --yt:#ff4444;--yt-d:rgba(255,68,68,0.12);
+  --r:10px;--rl:16px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;
+  height:56px;border-bottom:1px solid var(--border);position:sticky;top:0;
+  background:rgba(10,10,15,.88);backdrop-filter:blur(16px);z-index:100}
+.logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600;letter-spacing:-.4px;text-decoration:none;color:var(--text)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.nav-link{font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:var(--r);transition:.15s}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.nav-link.active{color:var(--text);background:var(--bg3)}
+.btn-new{display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--accent);
+  color:#fff;border:none;border-radius:var(--r);font-size:13px;font-family:'DM Sans',sans-serif;
+  font-weight:500;cursor:pointer;transition:.18s;text-decoration:none}
+.btn-new:hover{background:#5555ee}
+.btn-logout{background:none;border:1px solid var(--border);color:var(--text2);
+  padding:6px 12px;border-radius:var(--r);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.15s}
+.btn-logout:hover{border-color:var(--border-h);color:var(--text)}
+/* layout */
+.container{max-width:1080px;margin:0 auto;padding:2rem 1.5rem 5rem}
+/* kpi */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem}
+.kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;
+  font-family:'DM Mono',monospace;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:600;letter-spacing:-.5px;margin-bottom:2px}
+.kpi-sub{font-size:12px;color:var(--text2)}
+.kpi-sub span{color:var(--success)}
+/* filter row */
+.filter-row{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.filter-tab{padding:6px 14px;border-radius:20px;font-size:12px;border:1px solid var(--border);
+  cursor:pointer;transition:.15s;color:var(--text2);background:none}
+.filter-tab:hover{border-color:var(--border-h);color:var(--text)}
+.filter-tab.on{background:var(--accent-d);border-color:rgba(108,108,255,.35);color:#a0a0ff}
+.filter-tab.on-google{background:var(--google-d);border-color:rgba(66,133,244,.35);color:#7aabff}
+.filter-tab.on-youtube{background:var(--yt-d);border-color:rgba(255,68,68,.35);color:#ff8888}
+.spacer{flex:1}
+.search-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);
+  outline:none;width:200px;transition:.18s}
+.search-box:focus{border-color:rgba(108,108,255,.4)}
+/* table */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;
+  border-bottom:1px solid var(--border);background:var(--bg3);font-weight:500}
+tbody tr{border-bottom:1px solid var(--border);transition:.15s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+td{padding:12px 14px;font-size:13px;vertical-align:middle}
+.camp-name{font-weight:500;margin-bottom:3px}
+.camp-meta{font-size:11px;color:var(--text2);display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.pill-google{background:var(--google-d);color:#7aabff}
+.pill-youtube{background:var(--yt-d);color:#ff8888}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+  border-radius:20px;font-size:11px;font-weight:500}
+.status-active{background:var(--success-d);color:var(--success)}
+.status-scheduled{background:var(--warn-d);color:var(--warn)}
+.status-ended{background:rgba(255,255,255,.05);color:var(--text3)}
+.status-paused{background:var(--err-d);color:var(--err)}
+.num{font-family:'DM Mono',monospace;font-size:12px}
+.action-btn{background:none;border:1px solid var(--border);color:var(--text2);
+  padding:4px 10px;border-radius:var(--r);font-size:11px;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:.15s}
+.action-btn:hover{border-color:var(--border-h);color:var(--text)}
+.action-btn.del:hover{border-color:rgba(255,85,85,.4);color:var(--err)}
+/* google badge */
+.google-status{display:flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:20px;font-size:12px;border:1px solid var(--border);background:var(--bg3)}
+.google-status.connected{border-color:rgba(66,133,244,.3);background:var(--google-d);color:#7aabff}
+.g-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.g-dot.live{background:var(--google);box-shadow:0 0 6px var(--google)}
+/* empty */
+.empty{text-align:center;padding:4rem 2rem;color:var(--text2)}
+.empty-icon{font-size:36px;margin-bottom:1rem;opacity:.5}
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;display:none}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);
+  width:100%;max-width:520px;padding:1.5rem;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer}
+.detail-row{display:flex;gap:12px;margin-bottom:10px}
+.detail-item{flex:1;background:var(--bg3);border-radius:var(--r);padding:10px 12px}
+.detail-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;margin-bottom:3px}
+.detail-val{font-size:13px;font-weight:500}
+.perf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:1rem 0}
+.perf-item{background:var(--bg3);border-radius:var(--r);padding:10px;text-align:center}
+.perf-num{font-size:18px;font-weight:600;font-family:'DM Mono',monospace;margin-bottom:2px}
+.perf-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+/* responsive */
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .perf-grid{grid-template-columns:1fr 1fr}
+  table thead th:nth-child(n+4){display:none}
+  table td:nth-child(n+4){display:none}
+  .topbar-right .nav-link{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a class="logo" href="/dashboard.html"><div class="dot"></div>AdFlow</a>
+  <div class="topbar-right">
+    <a class="nav-link active" href="/dashboard.html">ダッシュボード</a>
+    <a class="nav-link" href="/create.html">新規作成</a>
+    <div class="google-status" id="google-status">
+      <div class="g-dot" id="g-dot"></div>
+      <span id="g-label">Google未接続</span>
+    </div>
+    <a class="btn-new" href="/create.html">＋ 新規作成</a>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- KPI -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi"><div class="kpi-label">総インプレッション</div><div class="kpi-val" id="kpi-imp">—</div><div class="kpi-sub">全キャンペーン合計</div></div>
+    <div class="kpi"><div class="kpi-label">総クリック数</div><div class="kpi-val" id="kpi-clicks">—</div><div class="kpi-sub">全キャンペーン合計</div></div>
+    <div class="kpi"><div class="kpi-label">総費用</div><div class="kpi-val" id="kpi-cost">—</div><div class="kpi-sub">円（全期間）</div></div>
+    <div class="kpi"><div class="kpi-label">総コンバージョン</div><div class="kpi-val" id="kpi-conv">—</div><div class="kpi-sub">全キャンペーン合計</div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <button class="filter-tab on" onclick="setFilter('all',this)">すべて</button>
+    <button class="filter-tab" onclick="setFilter('active',this)">配信中</button>
+    <button class="filter-tab" onclick="setFilter('scheduled',this)">予約済み</button>
+    <button class="filter-tab" onclick="setFilter('ended',this)">終了</button>
+    <button class="filter-tab on-google" onclick="setFilter('google',this)">🔍 Google</button>
+    <button class="filter-tab on-youtube" onclick="setFilter('youtube',this)">▶ YouTube</button>
+    <div class="spacer"></div>
+    <input class="search-box" id="search" placeholder="🔍 キャンペーン名で検索" oninput="render()" />
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>キャンペーン</th>
+          <th>ステータス</th>
+          <th>配信期間</th>
+          <th>インプレッション</th>
+          <th>クリック / CTR</th>
+          <th>費用</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">キャンペーン詳細</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+let allCampaigns = [];
+let currentFilter = 'all';
+
+// ── Fetch & Init ──
+async function init() {
+  await loadGoogleStatus();
+  await loadCampaigns();
+}
+
+async function loadGoogleStatus() {
+  try {
+    const r = await fetch('/api/google/status');
+    const d = await r.json();
+    const dot = document.getElementById('g-dot');
+    const lbl = document.getElementById('g-label');
+    const wrap = document.getElementById('google-status');
+    if (d.connected) {
+      dot.classList.add('live');
+      lbl.textContent = d.mock ? 'Google接続（デモ）' : d.email;
+      wrap.classList.add('connected');
+    }
+  } catch(e) {}
+}
+
+async function loadCampaigns() {
+  try {
+    const r = await fetch('/api/campaigns');
+    const d = await r.json();
+    allCampaigns = d.campaigns || [];
+    updateKPI();
+    render();
+  } catch(e) {
+    document.getElementById('tbody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:3rem">データの読み込みに失敗しました</td></tr>';
+  }
+}
+
+// ── KPI ──
+function updateKPI() {
+  const fmt = n => n >= 10000 ? (n/10000).toFixed(1)+'万' : n.toLocaleString();
+  const imp   = allCampaigns.reduce((a,c) => a + (c.impressions||0), 0);
+  const clicks = allCampaigns.reduce((a,c) => a + (c.clicks||0), 0);
+  const cost  = allCampaigns.reduce((a,c) => a + (c.cost||0), 0);
+  const conv  = allCampaigns.reduce((a,c) => a + (c.conversions||0), 0);
+  document.getElementById('kpi-imp').textContent = fmt(imp);
+  document.getElementById('kpi-clicks').textContent = fmt(clicks);
+  document.getElementById('kpi-cost').textContent = '¥' + cost.toLocaleString();
+  document.getElementById('kpi-conv').textContent = conv.toLocaleString();
+}
+
+// ── Filter & Render ──
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('on','on-google','on-youtube'));
+  if (f === 'google') el.classList.add('on-google');
+  else if (f === 'youtube') el.classList.add('on-youtube');
+  else el.classList.add('on');
+  render();
+}
+
+function render() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  let list = allCampaigns.filter(c => {
+    const matchQ = !q || c.name.toLowerCase().includes(q);
+    const matchF =
+      currentFilter === 'all' ? true :
+      currentFilter === 'google'  ? c.platforms.includes('google') :
+      currentFilter === 'youtube' ? c.platforms.includes('youtube') :
+      c.status === currentFilter;
+    return matchQ && matchF;
+  });
+
+  const tbody = document.getElementById('tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7">
+      <div class="empty"><div class="empty-icon">📭</div>
+      該当するキャンペーンがありません</div></td></tr>`;
+    return;
+  }
+
+  const statusMap = {
+    active:    '<span class="status-badge status-active">● 配信中</span>',
+    scheduled: '<span class="status-badge status-scheduled">◌ 予約済み</span>',
+    ended:     '<span class="status-badge status-ended">— 終了</span>',
+    paused:    '<span class="status-badge status-paused">‖ 一時停止</span>',
+  };
+
+  tbody.innerHTML = list.map(c => {
+    const pills = c.platforms.map(p =>
+      p === 'google'
+        ? '<span class="pill pill-google">🔍 Google</span>'
+        : '<span class="pill pill-youtube">▶ YouTube</span>'
+    ).join('');
+    const ctr = c.ctr ? c.ctr.toFixed(2) + '%' : '—';
+    const cost = c.cost ? '¥' + c.cost.toLocaleString() : '—';
+    const imp  = c.impressions ? c.impressions.toLocaleString() : '—';
+    const clk  = c.clicks ? c.clicks.toLocaleString() : '—';
+    return `<tr onclick="openModal('${c.id}')">
+      <td>
+        <div class="camp-name">${esc(c.name)}</div>
+        <div class="camp-meta">${pills}</div>
+      </td>
+      <td>${statusMap[c.status] || c.status}</td>
+      <td><div class="num" style="font-size:11px">${c.startDate}<br>${c.endDate ? '〜 '+c.endDate : '（終了日未設定）'}</div></td>
+      <td><span class="num">${imp}</span></td>
+      <td><span class="num">${clk}</span><span style="color:var(--text3);margin-left:6px;font-size:11px">${ctr}</span></td>
+      <td><span class="num">${cost}</span></td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:5px">
+          <button class="action-btn" onclick="togglePause('${c.id}')">
+            ${c.status === 'paused' ? '再開' : '停止'}
+          </button>
+          <button class="action-btn del" onclick="deleteCampaign('${c.id}')">削除</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Actions ──
+async function togglePause(id) {
+  const c = allCampaigns.find(x => x.id === id);
+  if (!c) return;
+  const newStatus = c.status === 'paused' ? 'active' : 'paused';
+  await fetch('/api/campaigns/' + id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus })
+  });
+  c.status = newStatus;
+  render();
+}
+
+async function deleteCampaign(id) {
+  if (!confirm('このキャンペーンを削除しますか？')) return;
+  await fetch('/api/campaigns/' + id, { method: 'DELETE' });
+  allCampaigns = allCampaigns.filter(c => c.id !== id);
+  updateKPI();
+  render();
+}
+
+// ── Modal ──
+function openModal(id) {
+  const c = allCampaigns.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modal-title').textContent = c.name;
+  const pills = c.platforms.map(p =>
+    p === 'google' ? '<span class="pill pill-google">🔍 Google広告</span>'
+                   : '<span class="pill pill-youtube">▶ YouTube広告</span>'
+  ).join(' ');
+  document.getElementById('modal-body').innerHTML = `
+    <div style="margin-bottom:1rem">${pills}</div>
+    <div class="perf-grid">
+      <div class="perf-item"><div class="perf-num">${(c.impressions||0).toLocaleString()}</div><div class="perf-lbl">Impressions</div></div>
+      <div class="perf-item"><div class="perf-num">${(c.clicks||0).toLocaleString()}</div><div class="perf-lbl">Clicks</div></div>
+      <div class="perf-item"><div class="perf-num">${c.ctr ? c.ctr.toFixed(2)+'%' : '—'}</div><div class="perf-lbl">CTR</div></div>
+      <div class="perf-item"><div class="perf-num">${(c.conversions||0).toLocaleString()}</div><div class="perf-lbl">Conversions</div></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-item"><div class="detail-label">配信期間</div><div class="detail-val">${c.startDate} 〜 ${c.endDate||'未設定'}</div></div>
+      <div class="detail-item"><div class="detail-label">1日予算</div><div class="detail-val">¥${(c.budgetMin||0).toLocaleString()} 〜 ¥${(c.budgetMax||0).toLocaleString()}</div></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-item"><div class="detail-label">ターゲット</div><div class="detail-val">${(c.targets||[]).join('、') || '—'}</div></div>
+      <div class="detail-item"><div class="detail-label">地域</div><div class="detail-val">${(c.areas||[]).join('、') || '—'}</div></div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-item"><div class="detail-label">総費用</div><div class="detail-val">¥${(c.cost||0).toLocaleString()}</div></div>
+      <div class="detail-item"><div class="detail-label">入札戦略</div><div class="detail-val">${c.bidStrategy||'—'}</div></div>
+    </div>
+    <div style="text-align:right;margin-top:1rem">
+      <a href="/create.html" style="color:var(--accent);font-size:13px;text-decoration:none">＋ 複製して新規作成 →</a>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ── Logout ──
+async function logout() {
+  await fetch('/auth/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>

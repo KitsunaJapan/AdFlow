@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AdFlow — 新規広告作成</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;
+  --border:rgba(255,255,255,0.07);--border-h:rgba(255,255,255,0.14);
+  --text:#f0f0f5;--text2:#8888a0;--text3:#4a4a60;
+  --accent:#6c6cff;--accent-d:rgba(108,108,255,0.12);
+  --success:#3ecf8e;--success-d:rgba(62,207,142,0.1);
+  --google:#4285f4;--google-d:rgba(66,133,244,0.12);
+  --yt:#ff4444;--yt-d:rgba(255,68,68,0.12);
+  --r:10px;--rl:16px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;
+  height:56px;border-bottom:1px solid var(--border);position:sticky;top:0;
+  background:rgba(10,10,15,.88);backdrop-filter:blur(16px);z-index:100}
+.logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600;
+  letter-spacing:-.4px;text-decoration:none;color:var(--text)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.nav-link{font-size:13px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:var(--r);transition:.15s}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.btn-logout{background:none;border:1px solid var(--border);color:var(--text2);
+  padding:6px 12px;border-radius:var(--r);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.15s}
+.btn-logout:hover{border-color:var(--border-h);color:var(--text)}
+/* layout */
+.container{max-width:740px;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+/* steps */
+.steps{display:flex;align-items:center;margin-bottom:2.5rem}
+.step{display:flex;align-items:center;gap:7px;cursor:pointer;opacity:.3;transition:.2s}
+.step.done,.step.active{opacity:1}
+.step-c{width:26px;height:26px;border-radius:50%;border:1px solid var(--border-h);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  font-family:'DM Mono',monospace;background:var(--bg3);transition:.2s;flex-shrink:0}
+.step.active .step-c{border-color:var(--accent);background:var(--accent-d);color:var(--accent)}
+.step.done .step-c{border-color:var(--success);background:var(--success-d);color:var(--success)}
+.step-lbl{font-size:12px;color:var(--text2);white-space:nowrap}
+.step.active .step-lbl{color:var(--text)}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 8px}
+/* panel */
+.panel{display:none;animation:fadeUp .22s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.panel-title{font-size:21px;font-weight:600;letter-spacing:-.4px;margin-bottom:4px}
+.panel-sub{font-size:13px;color:var(--text2);margin-bottom:2rem}
+/* card */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);
+  padding:1.5rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.07em;font-family:'DM Mono',monospace;margin-bottom:1rem}
+/* platform cards */
+.p-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.p-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--rl);
+  padding:1.25rem 1rem;cursor:pointer;text-align:center;transition:.18s;user-select:none}
+.p-card:hover{border-color:var(--border-h)}
+.p-card.sel-google{border-color:var(--google);background:var(--google-d)}
+.p-card.sel-youtube{border-color:var(--yt);background:var(--yt-d)}
+.p-card.sel-both{border-color:var(--accent);background:var(--accent-d)}
+.p-icon{font-size:24px;margin-bottom:7px}
+.p-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.p-sub{font-size:11px;color:var(--text2)}
+/* form */
+.field{margin-bottom:1rem}
+.field:last-child{margin-bottom:0}
+.fh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+label{display:block;font-size:12px;color:var(--text2);font-weight:500}
+.req{color:var(--yt)}
+.char{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3)}
+.char.warn{color:#f5a623}
+input[type=text],input[type=url],input[type=number],input[type=date],select,textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);
+  outline:none;transition:.18s;appearance:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(108,108,255,.5)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238888a0'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:30px;cursor:pointer}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.pfx{display:flex}
+.pfx-label{background:var(--bg3);border:1px solid var(--border);border-right:none;
+  border-radius:var(--r) 0 0 var(--r);padding:9px 10px;font-size:12px;color:var(--text2);
+  white-space:nowrap;font-family:'DM Mono',monospace}
+.pfx input{border-radius:0 var(--r) var(--r) 0;border-left:none}
+/* section badge */
+.sbadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:1rem}
+.sbadge.google{background:var(--google-d);color:#7aabff;border:1px solid rgba(66,133,244,.2)}
+.sbadge.youtube{background:var(--yt-d);color:#ff8888;border:1px solid rgba(255,68,68,.2)}
+/* tags */
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tag{padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);
+  cursor:pointer;transition:.15s;color:var(--text2);background:var(--bg3);user-select:none}
+.tag:hover{border-color:var(--border-h);color:var(--text)}
+.tag.on{background:var(--accent-d);border-color:rgba(108,108,255,.4);color:#a0a0ff}
+/* nav */
+.nav-row{display:flex;justify-content:space-between;align-items:center;
+  margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 20px;border-radius:var(--r);
+  font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;transition:.18s;border:none}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--border-h);color:var(--text)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#5555ee}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-reserve{background:linear-gradient(135deg,var(--success) 0%,#2ea871 100%);color:#fff;padding:11px 28px;font-size:14px}
+.btn-reserve:hover{opacity:.9}
+/* summary */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sum-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.sum-item.full{grid-column:1/-1}
+.sum-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;
+  font-family:'DM Mono',monospace;margin-bottom:4px}
+.sum-val{font-size:13px;font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;margin-right:5px}
+.pill-g{background:var(--google-d);color:#7aabff}
+.pill-y{background:var(--yt-d);color:#ff8888}
+/* success */
+.success{text-align:center;padding:3rem 1rem}
+.success-ring{width:70px;height:70px;border-radius:50%;background:var(--success-d);
+  border:2px solid var(--success);display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin:0 auto 1.5rem;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-size:21px;font-weight:600;letter-spacing:-.4px;margin-bottom:7px}
+.success-sub{font-size:13px;color:var(--text2);margin-bottom:2rem;line-height:1.7}
+.success-id{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);
+  background:var(--bg3);padding:6px 14px;border-radius:20px;display:inline-block;margin-bottom:2rem}
+.success-acts{display:flex;gap:10px;justify-content:center}
+/* responsive */
+@media(max-width:540px){
+  .p-grid{grid-template-columns:1fr}
+  .row2,.row3{grid-template-columns:1fr}
+  .sum-grid{grid-template-columns:1fr}
+  .sum-item.full{grid-column:auto}
+}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a class="logo" href="/dashboard.html"><div class="dot"></div>AdFlow</a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <a class="nav-link" href="/dashboard.html">ダッシュボード</a>
+    <a class="nav-link active" href="/create.html">新規作成</a>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Steps -->
+  <div class="steps" id="steps-bar">
+    <div class="step active" id="s0" onclick="goStep(0)"><div class="step-c">0</div><div class="step-lbl">プラットフォーム</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="s1" onclick="goStep(1)"><div class="step-c">1</div><div class="step-lbl">広告内容</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="s2" onclick="goStep(2)"><div class="step-c">2</div><div class="step-lbl">配信設定</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="s3" onclick="goStep(3)"><div class="step-c">3</div><div class="step-lbl">予約確認</div></div>
+  </div>
+
+  <!-- ── Step 0: Platform ── -->
+  <div class="panel active" id="p0">
+    <div class="panel-title">配信プラットフォームを選択</div>
+    <div class="panel-sub">Google広告・YouTube広告、または両方を選択してください</div>
+    <div class="p-grid">
+      <div class="p-card" id="pc-google" onclick="togglePlatform('google')">
+        <div class="p-icon">🔍</div><div class="p-name">Google広告</div><div class="p-sub">検索・ディスプレイ</div>
+      </div>
+      <div class="p-card" id="pc-youtube" onclick="togglePlatform('youtube')">
+        <div class="p-icon">▶︎</div><div class="p-name">YouTube広告</div><div class="p-sub">動画・バンパー</div>
+      </div>
+      <div class="p-card" id="pc-both" onclick="selectBoth()">
+        <div class="p-icon">⊕</div><div class="p-name">両方</div><div class="p-sub">同時配信</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">キャンペーン基本情報</div>
+      <div class="field">
+        <label>キャンペーン名 <span class="req">*</span></label>
+        <input type="text" id="campaign-name" placeholder="例: 春季セールキャンペーン2025" />
+      </div>
+      <div class="field">
+        <label>目標 / 目的</label>
+        <select id="campaign-goal">
+          <option value="">選択してください</option>
+          <option value="awareness">ブランド認知度の向上</option>
+          <option value="traffic">ウェブサイトへの集客</option>
+          <option value="leads">リード獲得</option>
+          <option value="sales">売上・コンバージョン増加</option>
+          <option value="app">アプリのインストール促進</option>
+        </select>
+      </div>
+    </div>
+    <div class="nav-row"><div></div><button class="btn btn-primary" onclick="next(0)">次へ →</button></div>
+  </div>
+
+  <!-- ── Step 1: Ad Content ── -->
+  <div class="panel" id="p1">
+    <div class="panel-title">広告内容の設定</div>
+    <div class="panel-sub">各プラットフォームの広告クリエイティブを設定します</div>
+
+    <div id="g-sec" style="display:none">
+      <div class="sbadge google">🔍 Google広告</div>
+      <div class="card">
+        <div class="card-title">Google広告フォーマット</div>
+        <div class="field"><label>広告タイプ</label>
+          <select id="g-type">
+            <option value="search">検索広告（テキスト）</option>
+            <option value="display">ディスプレイ広告（バナー）</option>
+            <option value="shopping">ショッピング広告</option>
+            <option value="pmax">P-MAX キャンペーン</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field"><div class="fh"><label>見出し 1 <span class="req">*</span></label><span class="char" id="h1c">0/30</span></div>
+            <input type="text" id="headline1" maxlength="30" placeholder="メインの見出し" oninput="cc('headline1','h1c',30)" /></div>
+          <div class="field"><div class="fh"><label>見出し 2</label><span class="char" id="h2c">0/30</span></div>
+            <input type="text" id="headline2" maxlength="30" placeholder="サブの見出し" oninput="cc('headline2','h2c',30)" /></div>
+        </div>
+        <div class="field"><div class="fh"><label>説明文 <span class="req">*</span></label><span class="char" id="dc">0/90</span></div>
+          <textarea id="description" maxlength="90" placeholder="広告の説明文..." oninput="cc('description','dc',90)"></textarea></div>
+        <div class="field"><label>最終 URL <span class="req">*</span></label>
+          <div class="pfx"><span class="pfx-label">https://</span><input type="text" id="final-url" placeholder="example.com/lp" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="y-sec" style="display:none;margin-top:1rem">
+      <div class="sbadge youtube">▶ YouTube広告</div>
+      <div class="card">
+        <div class="card-title">動画広告設定</div>
+        <div class="field"><label>動画フォーマット</label>
+          <select id="yt-format">
+            <option value="skippable">スキップ可能なインストリーム（5秒後スキップ可）</option>
+            <option value="non-skip">スキップ不可インストリーム（最大15秒）</option>
+            <option value="bumper">バンパー広告（最大6秒）</option>
+            <option value="discovery">動画ディスカバリー広告</option>
+            <option value="outstream">アウトストリーム広告（モバイル向け）</option>
+          </select>
+        </div>
+        <div class="field"><label>動画 URL（YouTube） <span class="req">*</span></label>
+          <div class="pfx"><span class="pfx-label">youtube.com/watch?v=</span><input type="text" id="video-id" placeholder="xxxxxxxxxxx" /></div>
+        </div>
+        <div class="row2">
+          <div class="field"><div class="fh"><label>広告タイトル</label><span class="char" id="vtc">0/100</span></div>
+            <input type="text" id="video-title" maxlength="100" placeholder="動画広告のタイトル" oninput="cc('video-title','vtc',100)" /></div>
+          <div class="field"><label>CTA（行動を促すフレーズ）</label>
+            <input type="text" id="yt-cta" placeholder="例: 詳しくはこちら" /></div>
+        </div>
+        <div class="field"><label>遷移先 URL</label>
+          <div class="pfx"><span class="pfx-label">https://</span><input type="text" id="yt-url" placeholder="example.com/lp" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="prev(1)">← 戻る</button>
+      <button class="btn btn-primary" onclick="next(1)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Delivery ── -->
+  <div class="panel" id="p2">
+    <div class="panel-title">広告配信の設定</div>
+    <div class="panel-sub">配信期間・予算・ターゲット・地域を設定します</div>
+
+    <div class="card">
+      <div class="card-title">配信期間</div>
+      <div class="row2">
+        <div class="field"><label>開始日 <span class="req">*</span></label><input type="date" id="start-date" /></div>
+        <div class="field"><label>終了日</label><input type="date" id="end-date" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">予算設定（円 / 日）</div>
+      <div class="row2">
+        <div class="field"><label>予算下限</label>
+          <div class="pfx"><span class="pfx-label">¥</span><input type="number" id="budget-min" placeholder="1,000" min="0" step="100" /></div>
+        </div>
+        <div class="field"><label>予算上限 <span class="req">*</span></label>
+          <div class="pfx"><span class="pfx-label">¥</span><input type="number" id="budget-max" placeholder="10,000" min="0" step="100" /></div>
+        </div>
+      </div>
+      <div class="field"><label>入札戦略</label>
+        <select id="bid-strategy">
+          <option value="auto">自動入札（目標コンバージョン単価）</option>
+          <option value="manual-cpc">手動 CPC</option>
+          <option value="target-roas">目標広告費用対効果（ROAS）</option>
+          <option value="maximize">コンバージョン数の最大化</option>
+          <option value="target-cpa">目標 CPA</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ターゲット設定</div>
+      <div class="field"><label>年齢層</label>
+        <div class="tags" id="t-age">
+          <div class="tag" onclick="tog(this)">18〜24歳</div><div class="tag" onclick="tog(this)">25〜34歳</div>
+          <div class="tag" onclick="tog(this)">35〜44歳</div><div class="tag" onclick="tog(this)">45〜54歳</div>
+          <div class="tag" onclick="tog(this)">55歳以上</div>
+        </div>
+      </div>
+      <div class="field"><label>性別</label>
+        <div class="tags">
+          <div class="tag" onclick="tog(this)">男性</div><div class="tag" onclick="tog(this)">女性</div>
+          <div class="tag" onclick="tog(this)">指定しない</div>
+        </div>
+      </div>
+      <div class="field"><label>興味・関心</label>
+        <div class="tags">
+          <div class="tag" onclick="tog(this)">テクノロジー</div><div class="tag" onclick="tog(this)">ファッション・美容</div>
+          <div class="tag" onclick="tog(this)">フード・グルメ</div><div class="tag" onclick="tog(this)">旅行</div>
+          <div class="tag" onclick="tog(this)">スポーツ・フィットネス</div><div class="tag" onclick="tog(this)">金融・投資</div>
+          <div class="tag" onclick="tog(this)">ゲーム</div><div class="tag" onclick="tog(this)">自動車</div>
+          <div class="tag" onclick="tog(this)">子育て・教育</div>
+        </div>
+      </div>
+      <div class="field"><label>デバイス</label>
+        <div class="tags" id="t-dev">
+          <div class="tag" onclick="tog(this)">PC / デスクトップ</div><div class="tag" onclick="tog(this)">スマートフォン</div>
+          <div class="tag" onclick="tog(this)">タブレット</div><div class="tag" onclick="tog(this)">スマートTV</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">配信地域</div>
+      <div class="tags" id="t-area">
+        <div class="tag" onclick="tog(this)">🇯🇵 日本全国</div><div class="tag" onclick="tog(this)">北海道</div>
+        <div class="tag" onclick="tog(this)">東北</div><div class="tag" onclick="tog(this)">関東</div>
+        <div class="tag" onclick="tog(this)">東京都</div><div class="tag" onclick="tog(this)">神奈川県</div>
+        <div class="tag" onclick="tog(this)">中部・東海</div><div class="tag" onclick="tog(this)">近畿・関西</div>
+        <div class="tag" onclick="tog(this)">大阪府</div><div class="tag" onclick="tog(this)">中国・四国</div>
+        <div class="tag" onclick="tog(this)">九州・沖縄</div><div class="tag" onclick="tog(this)">🌏 海外・グローバル</div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="prev(2)">← 戻る</button>
+      <button class="btn btn-primary" onclick="next(2)">確認へ →</button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Confirm ── -->
+  <div class="panel" id="p3">
+    <div id="confirm-block">
+      <div class="panel-title">配信予約の確認</div>
+      <div class="panel-sub">内容を確認して「配信を予約する」を押してください</div>
+      <div class="sum-grid">
+        <div class="sum-item full"><div class="sum-lbl">プラットフォーム</div><div class="sum-val" id="sv-plat">—</div></div>
+        <div class="sum-item full"><div class="sum-lbl">キャンペーン名</div><div class="sum-val" id="sv-name">—</div></div>
+        <div class="sum-item"><div class="sum-lbl">配信期間</div><div class="sum-val" id="sv-period">—</div></div>
+        <div class="sum-item"><div class="sum-lbl">1日予算</div><div class="sum-val" id="sv-budget">—</div></div>
+        <div class="sum-item"><div class="sum-lbl">ターゲット</div><div class="sum-val" id="sv-target">—</div></div>
+        <div class="sum-item"><div class="sum-lbl">配信地域</div><div class="sum-val" id="sv-area">—</div></div>
+        <div class="sum-item full"><div class="sum-lbl">入札戦略</div><div class="sum-val" id="sv-bid">—</div></div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="prev(3)">← 戻る</button>
+        <button class="btn btn-reserve" id="reserve-btn" onclick="reserve()">✓ 配信を予約する</button>
+      </div>
+    </div>
+    <div id="success-block" style="display:none">
+      <div class="success">
+        <div class="success-ring">✓</div>
+        <div class="success-title">配信予約が完了しました</div>
+        <div class="success-sub" id="sv-detail">キャンペーンが予約されました。</div>
+        <div class="success-id" id="sv-id">Campaign ID: —</div>
+        <div class="success-acts">
+          <a href="/dashboard.html" class="btn btn-ghost">ダッシュボードへ →</a>
+          <a href="/create.html" class="btn btn-ghost">＋ 続けて作成</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const state = { platforms: [], step: 0 };
+
+// init dates
+const today = new Date();
+const nxt = new Date(today); nxt.setMonth(nxt.getMonth()+1);
+document.getElementById('start-date').value = today.toISOString().split('T')[0];
+document.getElementById('end-date').value   = nxt.toISOString().split('T')[0];
+
+// platform toggle
+function togglePlatform(p) {
+  clearPCards();
+  state.platforms = [p];
+  document.getElementById('pc-'+p).classList.add('sel-'+p);
+}
+function selectBoth() {
+  clearPCards();
+  state.platforms = ['google','youtube'];
+  document.getElementById('pc-google').classList.add('sel-google');
+  document.getElementById('pc-youtube').classList.add('sel-youtube');
+  document.getElementById('pc-both').classList.add('sel-both');
+}
+function clearPCards() {
+  ['google','youtube','both'].forEach(p => {
+    document.getElementById('pc-'+p).className = 'p-card';
+  });
+}
+
+// tags
+function tog(el) { el.classList.toggle('on'); }
+
+// char counter
+function cc(id, cid, max) {
+  const len = document.getElementById(id).value.length;
+  const el = document.getElementById(cid);
+  el.textContent = len+'/'+max;
+  el.classList.toggle('warn', len > max * .85);
+}
+
+// navigation
+function next(from) {
+  if (from === 0) {
+    if (!state.platforms.length) { alert('プラットフォームを選択してください'); return; }
+    if (!document.getElementById('campaign-name').value.trim()) { alert('キャンペーン名を入力してください'); return; }
+    document.getElementById('g-sec').style.display = state.platforms.includes('google') ? 'block' : 'none';
+    document.getElementById('y-sec').style.display = state.platforms.includes('youtube') ? 'block' : 'none';
+  }
+  if (from === 2) buildSummary();
+  showStep(from + 1);
+}
+function prev(from) { showStep(from - 1); }
+function goStep(n) { if (n <= state.step) showStep(n); }
+
+function showStep(n) {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('p'+i).classList.remove('active');
+    const s = document.getElementById('s'+i);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+  }
+  document.getElementById('p'+n).classList.add('active');
+  document.getElementById('s'+n).classList.add('active');
+  state.step = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// summary
+function buildSummary() {
+  const pm = { google:'<span class="pill pill-g">🔍 Google</span>', youtube:'<span class="pill pill-y">▶ YouTube</span>' };
+  document.getElementById('sv-plat').innerHTML = state.platforms.map(p => pm[p]).join('');
+  document.getElementById('sv-name').textContent = document.getElementById('campaign-name').value || '—';
+  const s = document.getElementById('start-date').value;
+  const e = document.getElementById('end-date').value;
+  document.getElementById('sv-period').textContent = s ? s + (e ? ' 〜 '+e : '') : '—';
+  const bmin = document.getElementById('budget-min').value;
+  const bmax = document.getElementById('budget-max').value;
+  document.getElementById('sv-budget').textContent = (bmin||bmax)
+    ? '¥'+(bmin?Number(bmin).toLocaleString():'0')+' 〜 ¥'+(bmax?Number(bmax).toLocaleString():'上限なし')
+    : '—';
+  const targets = Array.from(document.querySelectorAll('#p2 .card:nth-child(3) .tag.on')).map(t => t.textContent);
+  document.getElementById('sv-target').textContent = targets.length ? targets.slice(0,4).join('、') : '—';
+  const areas = Array.from(document.querySelectorAll('#t-area .tag.on')).map(t => t.textContent);
+  document.getElementById('sv-area').textContent = areas.length ? areas.join('、') : '—';
+  const bidSel = document.getElementById('bid-strategy');
+  document.getElementById('sv-bid').textContent = bidSel.options[bidSel.selectedIndex].text;
+}
+
+// reserve
+async function reserve() {
+  const btn = document.getElementById('reserve-btn');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+
+  const bidSel = document.getElementById('bid-strategy');
+  const targets = Array.from(document.querySelectorAll('#p2 .card:nth-child(3) .tag.on')).map(t => t.textContent);
+  const devices = Array.from(document.querySelectorAll('#t-dev .tag.on')).map(t => t.textContent);
+  const areas   = Array.from(document.querySelectorAll('#t-area .tag.on')).map(t => t.textContent);
+
+  const body = {
+    name: document.getElementById('campaign-name').value,
+    platforms: state.platforms,
+    goal: document.getElementById('campaign-goal').value,
+    startDate: document.getElementById('start-date').value,
+    endDate:   document.getElementById('end-date').value,
+    budgetMin: Number(document.getElementById('budget-min').value) || 0,
+    budgetMax: Number(document.getElementById('budget-max').value) || 0,
+    bidStrategy: bidSel.options[bidSel.selectedIndex].text,
+    targets, devices, areas,
+    // Google
+    adType:      document.getElementById('g-type')?.value,
+    headline1:   document.getElementById('headline1').value,
+    headline2:   document.getElementById('headline2').value,
+    description: document.getElementById('description').value,
+    finalUrl:    document.getElementById('final-url').value,
+    // YouTube
+    ytFormat:   document.getElementById('yt-format')?.value,
+    videoId:    document.getElementById('video-id').value,
+    videoTitle: document.getElementById('video-title').value,
+    ytCta:      document.getElementById('yt-cta').value,
+    ytUrl:      document.getElementById('yt-url').value,
+  };
+
+  try {
+    const res = await fetch('/api/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    document.getElementById('sv-detail').textContent =
+      '「'+body.name+'」の配信が '+body.startDate+' より開始されます。広告審査後に配信が始まります。';
+    document.getElementById('sv-id').textContent = 'Campaign ID: ' + data.id;
+    document.getElementById('confirm-block').style.display = 'none';
+    document.getElementById('success-block').style.display = 'block';
+  } catch(e) {
+    alert('エラーが発生しました。再度お試しください。');
+    btn.disabled = false;
+    btn.textContent = '✓ 配信を予約する';
+  }
+}
+
+async function logout() {
+  await fetch('/auth/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+</script>
+</body>
+</html>
