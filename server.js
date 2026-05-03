@@ -8,6 +8,9 @@ const { sessionMiddleware, requireAuth } = require('./middleware/session');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ── Renderのリバースプロキシ対応（必須） ──
+app.set('trust proxy', 1);
+
 // ── ミドルウェア ──
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
@@ -54,3 +57,4 @@ app.listen(PORT, () => {
   console.log(`   Google API: ${process.env.GOOGLE_CLIENT_ID ? '本番接続' : 'モック'}`);
   console.log(`   Firebase: ${process.env.FIREBASE_PROJECT_ID ? '接続済み' : 'モック（インメモリ）'}`);
 });
+EOF
